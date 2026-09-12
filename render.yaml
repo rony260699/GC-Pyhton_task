@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: pdf-editor-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: TRANSLATION_PROVIDER
+        value: google

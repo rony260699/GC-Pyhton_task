@@ -1,0 +1,14 @@
+{
+  "info": {"name": "PDF Editor API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+  "variable": [{"key": "baseUrl", "value": "http://localhost:8000"}],
+  "item": [
+    {"name": "Health", "request": {"method": "GET", "url": "{{baseUrl}}/health"}},
+    {"name": "Translate PDF", "request": {"method": "POST", "header": [], "body": {"mode": "formdata", "formdata": [
+      {"key": "file", "type": "file", "src": []}, {"key": "source_language", "value": "en", "type": "text"}, {"key": "target_language", "value": "bn", "type": "text"}
+    ]}, "url": "{{baseUrl}}/api/translate-pdf"}},
+    {"name": "Watermark PDF", "request": {"method": "POST", "header": [], "body": {"mode": "formdata", "formdata": [
+      {"key": "file", "type": "file", "src": []}, {"key": "text", "value": "CONFIDENTIAL", "type": "text"},
+      {"key": "position", "value": "center", "type": "text"}, {"key": "opacity", "value": "0.25", "type": "text"}, {"key": "color", "value": "#FF0000", "type": "text"}
+    ]}, "url": "{{baseUrl}}/editor/pdf/watermark"}}
+  ]
+}
