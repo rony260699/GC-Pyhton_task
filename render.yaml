@@ -6,4 +6,8 @@ services:
     healthCheckPath: /health
     envVars:
       - key: TRANSLATION_PROVIDER
-        value: google
+        value: gemini
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: GEMINI_API_KEY
+        sync: false

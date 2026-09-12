@@ -4,7 +4,7 @@ The service has a thin FastAPI API layer, bounded PDF validation, focused transl
 
 PyMuPDF was selected for extraction, page geometry, complex-script HTML rendering, and PDF serialization. For translated documents, text is extracted in reading order per source page, translated in bounded chunks, escaped as HTML, and passed through PyMuPDF Story pagination. Its HTML engine performs complex-script shaping and embeds fallback fonts, which allows Bangla conjuncts and vowel signs to render correctly. An optional Noto Sans Bengali TTF can be placed in `app/fonts/` for explicit font control.
 
-The translation adapter defaults to `deep-translator` for a zero-configuration Postman demonstration and can switch to a LibreTranslate-compatible API through environment variables. Provider failures become a controlled `502` response. The watermark path opens the original document and overlays positioned, colored, transparent HTML text on every page while preserving existing content.
+The translation adapter defaults to Google's official Gemini API and can switch to a LibreTranslate-compatible API through environment variables. Provider failures become controlled `502` or `503` responses. The watermark path opens the original document and overlays positioned, colored, transparent HTML text on every page while preserving existing content.
 
 The service checks the PDF signature, actual parseability, password protection, empty documents, file size, page count, language-code shape, watermark position, opacity, color, and text length. Current limits are deliberately small enough for a synchronous assessment API.
 

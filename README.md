@@ -40,7 +40,7 @@ Do not manually set `Content-Type`; Postman adds the multipart boundary.
 
 ## Translation provider
 
-The default adapter uses `deep-translator`'s Google translator, which is convenient for an assessment demo but is an unofficial external service. For controlled deployment, set `TRANSLATION_PROVIDER=libretranslate`, `LIBRETRANSLATE_URL`, and optionally `LIBRETRANSLATE_API_KEY`. No secret is committed.
+The default adapter uses the official Gemini API. Set `GEMINI_API_KEY` in `.env` locally and in the host's secret environment variables when deployed. The key is never committed. A LibreTranslate-compatible service can alternatively be configured with `TRANSLATION_PROVIDER=libretranslate`, `LIBRETRANSLATE_URL`, and optionally `LIBRETRANSLATE_API_KEY`.
 
 ## Run tests
 
@@ -63,7 +63,7 @@ docker run --rm -p 8000:8000 --env-file .env pdf-editor-api
 4. After deployment, open `https://YOUR-SERVICE.onrender.com/health` and `/docs`.
 5. Change the Postman collection's `baseUrl` variable to the Render URL.
 
-For a stable translation service, add the LibreTranslate environment variables in Render. Free services may sleep and have request-duration limits.
+In Render, add `GEMINI_API_KEY` as a secret environment variable. Free services may sleep and have request-duration limits.
 
 ## Design choices and limitations
 
