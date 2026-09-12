@@ -1,111 +1,70 @@
 # PDF Editor API
 
-A FastAPI-based backend service for translating PDF documents and applying customizable text watermarks.
+FastAPI service for translating text PDFs and adding configurable text watermarks.
 
 ## Features
 
-- Translate selectable PDF text between supported languages
-- Bangla (`bn`) source and target language support
-- Proper Bangla Unicode shaping and PDF rendering
-- Add configurable watermarks to every PDF page
-- Validate file size, page count, PDF structure and request fields
-- Interactive Swagger API documentation
-- Postman collection included
-- Docker and Render deployment support
+- `POST /api/translate-pdf`: extracts selectable text page by page, translates it, and rebuilds a clean PDF.
+- `POST /editor/pdf/watermark`: preserves the source PDF and adds text to every page.
+- Bangla and other complex scripts rendered and shaped by PyMuPDF's HTML text engine. PyMuPDF embeds an appropriate fallback font; an optional `app/fonts/NotoSansBengali-Regular.ttf` is used automatically when supplied.
+- File-size/page-count limits, PDF signature/corruption checks, safe in-memory processing, and clear errors.
+- Swagger UI, Postman collection, Dockerfile, tests, and Render deployment config.
 
-## API Endpoints
-
-### Health Check
-
-```http
-GET /health
-Translate PDF
-POST /api/translate-pdf
-
-Required multipart form-data:
-
-Field	Example
-file	document.pdf
-source_language	en
-target_language	bn
-
-The endpoint extracts selectable text, translates it and returns a newly generated PDF.
-
-Add PDF Watermark
-POST /editor/pdf/watermark
-
-Required multipart form-data:
-
-Field	Example
-file	document.pdf
-text	CONFIDENTIAL
-position	center
-opacity	0.25
-color	#FF0000
-
-Supported positions:
-
-top-left
-top-center
-top-right
-center
-bottom-left
-bottom-center
-bottom-right
-Local Setup
+## Local setup (Windows PowerShell)
 
 Python 3.11 or 3.12 is recommended.
 
-python -m venv .myvenv
-.myvenv\Scripts\Activate.ps1
-
+```powershell
+cd pdf-editor-api
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-
 Copy-Item .env.example .env
 uvicorn app.main:app --reload
+```
 
-Open Swagger UI:
+Open `http://127.0.0.1:8000/docs`. Health check: `http://127.0.0.1:8000/health`.
 
-http://127.0.0.1:8000/docs
+## Postman
 
-Health check:
+Import `postman/PDF-Editor-API.postman_collection.json`. Select a PDF file in each request, then use **Send and Download**.
 
-http://127.0.0.1:8000/health
-Postman Testing
+Translator form-data fields: `file`, `source_language=en`, `target_language=bn`.
 
-Import:
+Watermark form-data fields: `file`, `text=CONFIDENTIAL`, `position=center`, `opacity=0.25`, `color=#FF0000`.
 
-postman/PDF-Editor-API.postman_collection.json
+Allowed positions: `top-left`, `top-center`, `top-right`, `center`, `bottom-left`, `bottom-center`, `bottom-right`.
 
-Select a PDF file and use Send and Download to save the returned PDF.
+Do not manually set `Content-Type`; Postman adds the multipart boundary.
 
-Do not manually set the Content-Type header. Postman automatically adds the multipart boundary.
+## Translation provider
 
-Run Tests
-python -m pytest -q
-Docker
+The default adapter uses `deep-translator`'s Google translator, which is convenient for an assessment demo but is an unofficial external service. For controlled deployment, set `TRANSLATION_PROVIDER=libretranslate`, `LIBRETRANSLATE_URL`, and optionally `LIBRETRANSLATE_API_KEY`. No secret is committed.
+
+## Run tests
+
+```powershell
+pytest -q
+```
+
+## Docker
+
+```powershell
 docker build -t pdf-editor-api .
 docker run --rm -p 8000:8000 --env-file .env pdf-editor-api
-Render Deployment
-Push the project to GitHub.
-Open Render and select New > Blueprint.
-Connect the GitHub repository.
-Render will detect render.yaml.
-Deploy the generated web service.
-Open:
-https://YOUR-SERVICE.onrender.com/health
-https://YOUR-SERVICE.onrender.com/docs
-Design Choices
+```
 
-PyMuPDF handles PDF text extraction, page editing, Unicode rendering and PDF generation. PyMuPDF's HTML engine provides complex-script shaping for Bangla text.
+## Deploy on Render
 
-Translation is handled through a separate provider adapter. The default configuration uses deep-translator. LibreTranslate can also be configured through environment variables.
+1. Push this folder to a GitHub repository.
+2. In Render, choose **New > Blueprint** and connect the repository.
+3. Render detects `render.yaml`; approve the `pdf-editor-api` service.
+4. After deployment, open `https://YOUR-SERVICE.onrender.com/health` and `/docs`.
+5. Change the Postman collection's `baseUrl` variable to the Render URL.
 
-Uploaded files are processed in memory with size and page-count restrictions. User-controlled filenames are not used as server file paths.
+For a stable translation service, add the LibreTranslate environment variables in Render. Free services may sleep and have request-duration limits.
 
-Known Limitations
-Translated PDFs are rebuilt as clean text documents.
-Original layouts, images, tables, forms and links are not preserved.
-Scanned or image-only PDFs require OCR.
-Translation availability and quality depend on the configured provider.
+## Design choices and limitations
+
+PyMuPDF handles extraction, page editing, and PDF output, reducing format conversions. Translation is behind a small provider adapter. Uploaded bytes are bounded before parsing and never written using user-controlled filenames. The translated output is rebuilt as clean text pages; it does not preserve the original layout, images, tables, forms, or links. Image-only/scanned PDFs return an OCR-required error. Translation quality and availability depend on the configured provider. Production deployments should add authentication, rate limiting, malware scanning, observability, and a job queue for larger documents.
